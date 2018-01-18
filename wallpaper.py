@@ -4,6 +4,9 @@ import sys
 import urllib.request
 import json
 from subprocess import call
+import os
+
+
 
 def usage():
     print("./wallpaper.py storage_folder subreddit")
@@ -38,4 +41,10 @@ descfile = open(description_path, 'w+')
 descfile.write(image_description)
 descfile.close()
 
-#call(["gsettings", "set", "org.cinnamon.desktop.background", "picture-uri", "file:"+image_path])
+
+# Applying wallpaper changes, depending on the os and desktop manager
+
+if (os.name == "nt"): # Windows
+    pass
+elif (os.name == "posix"): # Linux
+    call(["gsettings", "set", "org.cinnamon.desktop.background", "picture-uri", "file:"+image_path])
