@@ -61,6 +61,9 @@ for index in range(len(postinfo["data"]["children"])):
     image_description =  postinfo["data"]["children"][index]["data"]["title"]
     break
 
+if (len(image_url) == 0):
+    sys.exit(1)
+
 data = urllib.request.urlopen(image_url).read()
 if (len(data) <= 0):
     sys.exit(1)
