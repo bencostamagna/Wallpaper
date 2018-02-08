@@ -6,7 +6,8 @@ import json
 from subprocess import call
 import os
 
-
+if (os.name == "nt"): # Windows
+    import ctypes
 
 def usage():
     print("./wallpaper.py storage_folder subreddit")
@@ -14,14 +15,13 @@ def usage():
 
 def getScreenRatio():
     if (os.name == "nt"): # Windows
-        import ctypes
         return ctypes.windll.user32.GetSystemMetrics(0)/ctypes.windll.user32.GetSystemMetrics(1)
     else:
         return 1.77 # default to 16/9
 
 def setBackground():
     if (os.name == "nt"): # Windows
-        pass
+        ctypes.windll.user32.SystemParametersInfoW(20, 0, image_path , 3)
     elif (os.name == "posix"): # Linux
         call(["gsettings", "set", "org.cinnamon.desktop.background", "picture-uri", "file:"+image_path])
 
