@@ -20,8 +20,6 @@ class RefreshScheduler(QtCore.QThread):
     def run(self):
         while 1:
             self.refresh_signal.emit()
-            # display.loadText()
-            print("sleeps " + str(self.delay))
             time.sleep(self.delay)
 
 class Toaster(QMainWindow):
@@ -31,18 +29,14 @@ class Toaster(QMainWindow):
         self.mwidget = QMainWindow(self)
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.Tool | QtCore.Qt.WindowStaysOnBottomHint)
 
-        self.lbl = QLabel(self)
-        self.lbl.setFont(QFont('Times New Roman', 15, QFont.StyleItalic))
-        self.lbl.setStyleSheet("background-color: #f5dfc9;"
-                               "border: 1px solid gray;"
-                               "color: #444444;")
+        self.loadConfig()
 
-        config = configparser.ConfigParser()
-        config.read('wallpaper.ini')
-        self.description_path = config["Files"]["description_path"];
-        self.refresh_delay = int(config["Toaster"]["refresh_delay"]);
-        if len(self.description_path) == 0:
-            self.description_path="wallpaper.txt"
+        self.lbl = QLabel(self)
+        self.lbl.setFont(QFont(self.text_font, 15, QFont.StyleItalic))
+        self.lbl.setStyleSheet("background-color: " + self.color_background + ";"
+                               "border: 1px solid gray;"
+                               "color: " + self.color_text)
+
 
         scheduler = RefreshScheduler(self.refresh_delay)
         scheduler.refresh_signal.connect(self.loadText)
@@ -50,6 +44,16 @@ class Toaster(QMainWindow):
 
         self.show()
 
+
+
+    def loadConfig(self):
+        config = configparser.ConfigParser()
+        config.read('wallpaper.ini')
+        self.description_path = config.get("Files", "description_path", fallback="wallpaper.txt");
+        self.refresh_delay = config.getint("Toaster", "refresh_delay", fallback=1800);
+        self.color_background = config.get("Toaster", "color_background", fallback="#FFFFFF");
+        self.color_text = config.get("Toaster", "color_text", fallback="#000000");
+        self.text_font = config.get("Toaster", "font", fallback="Consolas");
 
 
     def loadText(self):
