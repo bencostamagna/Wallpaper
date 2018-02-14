@@ -3,13 +3,13 @@
 import sys
 import urllib.request
 import json
-import configparser
+import configparser, logging
 from subprocess import call
 import os
 
+
 if (os.name == "nt"): # Windows
     import ctypes
-
 
 def getScreenRatio():
     if (os.name == "nt"): # Windows
@@ -30,43 +30,64 @@ config.read('wallpaper.ini')
 subreddit=config['Source']['subreddit']
 image_path=config['Files']['image_path']
 description_path=config['Files']['description_path']
+log_path=config['Files']['log_path']
 
-screen_ratio = getScreenRatio()
+if (len(log_path) > 0):
+    try:
+        os.remove(log_path)
+    except OSError:
+        pass
+    logging.basicConfig(level=logging.DEBUG, filename=log_path, format='[%(asctime)s]: %(levelname)s:  %(message)s')
 
-image_url=""
-image_description=""
+try:
+    screen_ratio = getScreenRatio()
+    logging.info("Screen ratio is "+ str(screen_ratio))
 
-index_url="http://reddit.com/r/"+subreddit+"/top.json?limit=25"
-pagecontent = urllib.request.urlopen(index_url).read().decode('utf-8')
-postinfo = json.loads(pagecontent)
+    image_url=""
+    image_description=""
 
-# with open('test.json') as json_data:
-#     postinfo = json.load(json_data)
+    index_url="http://reddit.com/r/"+subreddit+"/top.json?limit=25"
+    logging.info("Fetching reddit data from "+ index_url + "...")
 
-for index in range(len(postinfo["data"]["children"])):
-    width = int(postinfo["data"]["children"][index]["data"]["preview"]["images"][0]["source"]["width"])
-    height = int(postinfo["data"]["children"][index]["data"]["preview"]["images"][0]["source"]["height"])
-    ratio = width/height
-    if ratio < screen_ratio*0.8 or ratio > screen_ratio*1.2:
-        continue
+    pagecontent = urllib.request.urlopen(index_url).read().decode('utf-8')
+    postinfo = json.loads(pagecontent)
 
-    image_url = postinfo["data"]["children"][index]["data"]["preview"]["images"][0]["source"]["url"]
-    image_description =  postinfo["data"]["children"][index]["data"]["title"]
-    break
+    # with open('test.json') as json_data:
+    #     postinfo = json.load(json_data)
 
-if (len(image_url) == 0):
-    sys.exit(1)
+    for index in range(len(postinfo["data"]["children"])):
+        width = int(postinfo["data"]["children"][index]["data"]["preview"]["images"][0]["source"]["width"])
+        height = int(postinfo["data"]["children"][index]["data"]["preview"]["images"][0]["source"]["height"])
+        ratio = width/height
+        if ratio < screen_ratio*0.8 or ratio > screen_ratio*1.2:
+            logging.info("Image "+ str(index) + " rejected with ratio of " + str(ratio))
+            continue
 
-data = urllib.request.urlopen(image_url).read()
-if (len(data) <= 0):
-    sys.exit(1)
+        logging.info("Image "+ str(index) + " SELECTED with ratio of " + str(ratio))
 
-imgfile = open(image_path, 'wb+')
-imgfile.write(data)
-imgfile.close()
+        image_url = postinfo["data"]["children"][index]["data"]["preview"]["images"][0]["source"]["url"]
+        image_description =  postinfo["data"]["children"][index]["data"]["title"]
+        break
 
-descfile = open(description_path, 'w+')
-descfile.write(image_description)
-descfile.close()
+    if (len(image_url) == 0):
+        sys.exit(1)
 
-setBackground()
+    logging.info("Fetching data from "+ image_url)
+    data = urllib.request.urlopen(image_url).read()
+    if (len(data) <= 0):
+        sys.exit(1)
+
+    logging.info("Saving to file...")
+    imgfile = open(image_path, 'wb+')
+    imgfile.write(data)
+    imgfile.close()
+
+    descfile = open(description_path, 'w+')
+    descfile.write(image_description)
+    descfile.close()
+
+    logging.info("Setting downloaded image as background...")
+    setBackground()
+
+except:
+    logging.exception("Exception raised: ")
