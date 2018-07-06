@@ -6,6 +6,7 @@ import json
 import configparser, logging
 from subprocess import call
 import os
+import re
 if (os.name == "nt"): # Windows
     import ctypes
 
@@ -87,7 +88,7 @@ try:
     imgfile.close()
 
     descfile = open(description_path, 'w+')
-    descfile.write(image_description)
+    descfile.write(re.sub(r'\[[^)]*\]', '', image_description))
     descfile.close()
 
     logging.info("Setting downloaded image as background...")
