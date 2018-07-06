@@ -6,10 +6,14 @@ import json
 import configparser, logging
 from subprocess import call
 import os
-
-
 if (os.name == "nt"): # Windows
     import ctypes
+
+
+
+def getScriptPath():
+    return os.path.dirname(os.path.realpath(sys.argv[0]))
+
 
 def getScreenRatio():
     if (os.name == "nt"): # Windows
@@ -25,7 +29,7 @@ def setBackground():
 
 
 config = configparser.ConfigParser()
-config.read('wallpaper.ini')
+config.read(os.path.join(getScriptPath(), 'wallpaper.ini'))
 
 subreddit=config['Source']['subreddit']
 image_path=config['Files']['image_path']
