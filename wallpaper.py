@@ -37,6 +37,9 @@ image_path=config['Files']['image_path']
 description_path=config['Files']['description_path']
 log_path=config['Files']['log_path']
 
+user_agent="WallpaperFetcher"
+
+
 if (len(log_path) > 0):
     try:
         os.remove(log_path)
@@ -54,7 +57,7 @@ try:
     index_url="http://reddit.com/r/"+subreddit+"/top.json?limit=25"
     logging.info("Fetching reddit data from "+ index_url + "...")
 
-    pagecontent = urllib.request.urlopen(index_url).read().decode('utf-8')
+    pagecontent = urllib.request.urlopen(urllib.request.Request(index_url, None, {'User-Agent': user_agent})).read().decode('utf-8')
     postinfo = json.loads(pagecontent)
 
     # with open('test.json') as json_data:
@@ -78,7 +81,7 @@ try:
         sys.exit(1)
 
     logging.info("Fetching data from "+ image_url)
-    data = urllib.request.urlopen(image_url).read()
+    data = urllib.request.urlopen(urllib.request.Request(image_url, None, {'User-Agent': user_agent})).read()
     if (len(data) <= 0):
         sys.exit(1)
 
