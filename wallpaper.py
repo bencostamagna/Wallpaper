@@ -73,7 +73,7 @@ try:
 
         logging.info("Image "+ str(index) + " SELECTED with ratio of " + str(ratio))
 
-        image_url = postinfo["data"]["children"][index]["data"]["preview"]["images"][0]["source"]["url"]
+        image_url = postinfo["data"]["children"][index]["data"]["url"]
         image_description =  postinfo["data"]["children"][index]["data"]["title"]
         break
 
